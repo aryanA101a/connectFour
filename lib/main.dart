@@ -2,8 +2,16 @@ import 'package:connect_four/connect_four_view_model.dart';
 import 'package:connect_four/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+String gameLanguage = "ENG";
+void main() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  gameLanguage = prefs.getString('language')??"ENG";
+  
+
   runApp(const MyApp());
 }
 
@@ -14,11 +22,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => ConnectFourViewModel(),)],
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => ConnectFourViewModel(),
+        )
+      ],
       child: MaterialApp(
         title: 'Flutter Demo',
-        
-        home:  MyHomePage(),
+        home: MyHomePage(),
       ),
     );
   }

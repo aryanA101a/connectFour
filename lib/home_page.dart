@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 case "HIN":
                   {
                     connectFourViewModel.changeLanguage("HIN");
+                    
                   }
                   break;
                 case "ENG":

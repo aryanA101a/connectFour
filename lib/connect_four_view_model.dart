@@ -4,11 +4,15 @@ import 'dart:developer';
 import 'package:confetti/confetti.dart';
 import 'package:connect_four/coin_model.dart';
 import 'package:connect_four/home_page.dart';
+import 'package:connect_four/main.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectFourViewModel with ChangeNotifier {
-  String _language = "ENG";
-  String _appbarTitle = "CONNECT FOUR";
+  String _language = gameLanguage;
+  String _appbarTitle =
+      gameLanguage == "HIN" ? "चार कनेक्ट करें" : "CONNECT FOUR";
+  late SharedPreferences prefs;
 
   var _boardData;
   Status _boardState = Status.player1;
@@ -17,9 +21,13 @@ class ConnectFourViewModel with ChangeNotifier {
     init();
     notifyListeners();
   }
+  loadPrefrences() async {
+    prefs = await SharedPreferences.getInstance();
+  }
 
   //initialize/reset every thing
   init() {
+    loadPrefrences();
     _boardData = List.generate(
         6,
         (index) => List.generate(7, (index) {
@@ -142,10 +150,12 @@ class ConnectFourViewModel with ChangeNotifier {
   changeLanguage(String language) {
     _language = language;
     if (language == "HIN") {
+      prefs.setString("language", "HIN");
       _appbarTitle = "चार कनेक्ट करें";
-    }
-    else if(language == "ENG"){
-      _appbarTitle = "CONNECT FOUR" ;
+    } else if (language == "ENG") {
+      prefs.setString("language", "ENG");
+      _appbarTitle = "CONNECT FOUR";
+
     }
     notifyListeners();
   }
