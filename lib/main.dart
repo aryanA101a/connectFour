@@ -1,16 +1,18 @@
 import 'package:connect_four/connect_four_view_model.dart';
 import 'package:connect_four/home_page.dart';
+import 'package:connect_four/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 String gameLanguage = "ENG";
 void main() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  setup();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  gameLanguage = prefs.getString('language')??"ENG";
-  
+  gameLanguage = prefs.getString('language') ?? "ENG";
 
   runApp(const MyApp());
 }
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => ConnectFourViewModel(),
+          create: (context) => getIt<ConnectFourViewModel>(),
         )
       ],
       child: MaterialApp(

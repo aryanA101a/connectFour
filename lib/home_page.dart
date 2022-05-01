@@ -3,9 +3,13 @@ import 'dart:developer';
 
 import 'package:connect_four/coin_model.dart';
 import 'package:connect_four/connect_four_view_model.dart';
+import 'package:connect_four/join_game_screen.dart';
+import 'package:connect_four/new_game_screen.dart';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 enum GameStatus { player1Won, player2Won, draw, goingOn }
 
@@ -17,184 +21,132 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late IO.Socket socket;
+  joinGame() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => JoinGameScreen(handleJoinGame),
+        ));
+  }
+
+  newGame() {
+    handleNewGame();
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NewGameScreen(),
+        ));
+  }
+
+  handleJoinGame() {
+    String code = context.read<ConnectFourViewModel>().gameCode;
+    socket.emit('joinGame',code);
+
+  }
+
+  handleNewGame() {
+    socket.emit('newGame');
+  }
+
+  handleGameCode(gameCode) {
+    context.read<ConnectFourViewModel>().setGameCode(gameCode);
+  }
+
+  handlePlayerNumber(playerNumber) {
+    context.read<ConnectFourViewModel>().setPlayerNumber(playerNumber);
+  }
+
+  initSocket() {
+    try {
+      socket = IO.io(
+          'https://6e0b-2409-4043-2e02-3eeb-6ce4-d53e-2857-7f7c.in.ngrok.io',
+          IO.OptionBuilder()
+              .setTransports(['websocket']) // for Flutter or Dart VM
+              .enableAutoConnect()
+              .build() // disable auto-connection
+
+          );
+      socket.on('gameCode', handleGameCode);
+      socket.on('playerNumber', handlePlayerNumber);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  @override
+  void initState() {
+    initSocket();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    var connectFourViewModel = context.watch<ConnectFourViewModel>();
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightBlue,
-        centerTitle: true,
-        title: Text(
-          connectFourViewModel.appbarTitle,
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          PopupMenuButton(
-            // color: base_purple,
-
-            child: Container(
-              margin: EdgeInsets.symmetric(
-                horizontal: 8,
-              ),
-              child: Center(
-                child: Text(
-                  connectFourViewModel.language,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            // shape: RoundedRectangleBorder(
-            // borderRadius: BorderRadius.circular(10)),
-            padding: EdgeInsets.all(0),
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            onSelected: (value) {
-              switch (value) {
-                case "HIN":
-                  {
-                    connectFourViewModel.changeLanguage("HIN");
-                    
-                  }
-                  break;
-                case "ENG":
-                  {
-                    connectFourViewModel.changeLanguage("ENG");
-                  }
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                  value: "ENG",
-                  child: Row(
-                    children: [
-                      Text("ENG",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ))
-                    ],
-                  )),
-              PopupMenuItem(
-                child: Divider(color: Colors.grey),
-                height: 0,
-              ),
-              PopupMenuItem(
-                  value: "HIN",
-                  child: Row(
-                    children: [
-                      Text("HIN",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ))
-                    ],
-                  )),
-            ],
-          ),
-        ],
-      ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Board(connectFourViewModel: connectFourViewModel),
-            MaterialButton(
-              height: 50,
-              elevation: 0,
-              color: Colors.lightBlue,
-              shape: CircleBorder(),
-              onPressed: () {
-                connectFourViewModel.showResult(context, GameStatus.player1Won);
-              },
-              child: Icon(
-                Icons.replay,
-                color: Colors.white,
+        child:
+            Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          RichText(
+            text: TextSpan(
+              text: 'C',
+              style: GoogleFonts.poppins(
+                color: Colors.lightBlue.shade700,
+                fontWeight: FontWeight.bold,
+                fontSize: 50,
               ),
+              children: [
+                TextSpan(
+                    text: 'o',
+                    style: TextStyle(
+                      color: Colors.amber.shade700,
+                    )),
+                TextSpan(text: 'nnect'),
+                TextSpan(text: ' F'),
+                TextSpan(
+                    text: 'o',
+                    style: TextStyle(
+                      color: Colors.pink.shade500,
+                    )),
+                TextSpan(text: 'ur'),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Board extends StatelessWidget {
-  const Board({
-    Key? key,
-    required this.connectFourViewModel,
-  }) : super(key: key);
-
-  final ConnectFourViewModel connectFourViewModel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(6.0),
-      child: Card(
-        color: Colors.lightBlue.shade300,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 0,
-        child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                  6,
-                  (r) => Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(
-                            7,
-                            (c) => CoinWidget(
-                                  context,
-                                  coin: connectFourViewModel.boardData[r][c],
-                                  state: connectFourViewModel.boardState,
-                                  gameCallback: connectFourViewModel.game,
-                                )),
-                      )),
-            )),
-      ),
-    );
-  }
-}
-
-class CoinWidget extends StatefulWidget {
-  BuildContext ctx;
-  Coin coin;
-  Status state;
-  Function gameCallback;
-  CoinWidget(this.ctx,
-      {required this.coin,
-      required this.state,
-      required this.gameCallback,
-      Key? key})
-      : super(key: key);
-
-  @override
-  State<CoinWidget> createState() => _CoinWidgetState();
-}
-
-class _CoinWidgetState extends State<CoinWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(1),
-      child: InkResponse(
-        onTap: widget.coin.state == Status.empty
-            ? () {
-                log(widget.state.name);
-                widget.coin.changeState(widget.state);
-                widget.gameCallback(widget.ctx);
-              }
-            : null,
-        child: CircleAvatar(
-          radius: 18,
-          backgroundColor: widget.coin.color,
-          // ts.tambolaNumArr[index].color,
-        ),
+          ),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: MaterialButton(
+                    color: Colors.lightBlue.shade200,
+                    elevation: 0,
+                    onPressed: newGame,
+                    child: Text(
+                      "NEW GAME",
+                      style: GoogleFonts.raleway(
+                        color: Colors.lightBlue.shade700,
+                        fontSize: 32,
+                      ),
+                    )),
+              ),
+              MaterialButton(
+                  color: Colors.lightBlue.shade200,
+                  elevation: 0,
+                  onPressed: joinGame,
+                  child: Text(
+                    "JOIN GAME",
+                    style: GoogleFonts.raleway(
+                      color: Colors.lightBlue.shade700,
+                      fontSize: 32,
+                    ),
+                  ))
+            ],
+          )
+        ]),
       ),
     );
   }

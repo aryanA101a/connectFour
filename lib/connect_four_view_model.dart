@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectFourViewModel with ChangeNotifier {
+  String _gameCode = "";
+  late int _playerNumber;
   String _language = gameLanguage;
   String _appbarTitle =
       gameLanguage == "HIN" ? "चार कनेक्ट करें" : "CONNECT FOUR";
@@ -155,12 +157,22 @@ class ConnectFourViewModel with ChangeNotifier {
     } else if (language == "ENG") {
       prefs.setString("language", "ENG");
       _appbarTitle = "CONNECT FOUR";
-
     }
     notifyListeners();
   }
 
   get appbarTitle => _appbarTitle;
+
+  String get gameCode => _gameCode;
+  setGameCode(String gameCode) {
+    _gameCode = gameCode;
+    notifyListeners();
+  }
+
+  get playerNumber => _playerNumber;
+  setPlayerNumber(int playerNumber) {
+    _playerNumber = playerNumber;
+  }
 }
 
 class WinnerDialog extends StatefulWidget {
