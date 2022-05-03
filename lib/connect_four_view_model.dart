@@ -4,108 +4,41 @@ import 'dart:developer';
 import 'package:confetti/confetti.dart';
 import 'package:connect_four/coin_model.dart';
 import 'package:connect_four/home_page.dart';
+import 'package:connect_four/join_game_screen.dart';
+import 'package:connect_four/locator.dart';
 import 'package:connect_four/main.dart';
+import 'package:connect_four/new_game_screen.dart';
+import 'package:connect_four/socketio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 class ConnectFourViewModel with ChangeNotifier {
   String _gameCode = "";
-  late int _playerNumber;
+  int? _playerNumber;
   String _language = gameLanguage;
   String _appbarTitle =
       gameLanguage == "HIN" ? "चार कनेक्ट करें" : "CONNECT FOUR";
-  late SharedPreferences prefs;
+  // late SharedPreferences prefs;
 
   var _boardData;
-  Status _boardState = Status.player1;
+  late Status _boardState;
   //constructor
   ConnectFourViewModel() {
     init();
     notifyListeners();
   }
-  loadPrefrences() async {
-    prefs = await SharedPreferences.getInstance();
-  }
+  // loadPrefrences() async {
+  //   prefs = await SharedPreferences.getInstance();
+  // }
 
   //initialize/reset every thing
   init() {
-    loadPrefrences();
+    // loadPrefrences();
     _boardData = List.generate(
         6,
         (index) => List.generate(7, (index) {
               return Coin();
             }));
-  }
-
-  GameStatus checkWinningStatus() {
-    log("checkWinningStatus");
-    int coinCounter = 0;
-    bool result = false;
-    for (int i = 0; i < 6; i++) {
-      if (result) {
-        break;
-      }
-      for (int j = 0; j < 7; j++) {
-        // log("$i $j");
-        if (_boardData[i][j].state != Status.empty) {
-          // log("xxxxxxxxxxxxxxxxxxxxx");
-
-          coinCounter++;
-          if (coinCounter == 42) {
-            return GameStatus.draw;
-          }
-          //check for index overflow
-          if (i + 3 < 6 && j + 3 < 7) {
-            //horizontal four
-            if (_boardData[i][j].color == _boardData[i][j + 1].color &&
-                _boardData[i][j + 1].color == _boardData[i][j + 2].color &&
-                _boardData[i][j + 2].color == _boardData[i][j + 3].color) {
-              log("winner");
-              result = true;
-              break;
-            }
-            //vertical four
-            if (_boardData[i][j].color == _boardData[i + 1][j].color &&
-                _boardData[i + 1][j].color == _boardData[i + 2][j].color &&
-                _boardData[i + 2][j].color == _boardData[i + 3][j].color) {
-              log("winner");
-              result = true;
-              break;
-            }
-
-            if (_boardData[i][j].color == _boardData[i + 1][j + 1].color &&
-                _boardData[i + 1][j + 1].color ==
-                    _boardData[i + 2][j + 2].color &&
-                _boardData[i + 2][j + 2].color ==
-                    _boardData[i + 3][j + 3].color) {
-              log("winner");
-              result = true;
-              break;
-            }
-          }
-          if (i + 3 <= 5 && j - 3 >= 0) {
-            if (_boardData[i][j].color == _boardData[i + 1][j - 1].color &&
-                _boardData[i + 1][j - 1].color ==
-                    _boardData[i + 2][j - 2].color &&
-                _boardData[i + 2][j - 2].color ==
-                    _boardData[i + 3][j - 3].color) {
-              log("winner");
-              result = true;
-              break;
-            }
-          }
-        }
-      }
-    }
-    if (result) {
-      if (_boardState == Status.player1) {
-        return GameStatus.player1Won;
-      } else {
-        return GameStatus.player2Won;
-      }
-    } else {
-      return GameStatus.goingOn;
-    }
   }
 
   void changeBoardState() {
@@ -118,12 +51,12 @@ class ConnectFourViewModel with ChangeNotifier {
   }
 
   game(BuildContext context) {
-    GameStatus winningStatus = checkWinningStatus();
-    if (winningStatus != GameStatus.goingOn) {
-      showResult(context, winningStatus);
-    }
-    changeBoardState();
-    notifyListeners();
+    // GameStatus winningStatus = checkWinningStatus();
+    // if (winningStatus != GameStatus.goingOn) {
+    //   showResult(context, winningStatus);
+    // }
+    // changeBoardState();
+    // notifyListeners();
   }
 
   reset() {
@@ -152,10 +85,10 @@ class ConnectFourViewModel with ChangeNotifier {
   changeLanguage(String language) {
     _language = language;
     if (language == "HIN") {
-      prefs.setString("language", "HIN");
+      // prefs.setString("language", "HIN");
       _appbarTitle = "चार कनेक्ट करें";
     } else if (language == "ENG") {
-      prefs.setString("language", "ENG");
+      // prefs.setString("language", "ENG");
       _appbarTitle = "CONNECT FOUR";
     }
     notifyListeners();
@@ -169,9 +102,27 @@ class ConnectFourViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  clearGameCode() {
+    _gameCode = "";
+  }
+
   get playerNumber => _playerNumber;
   setPlayerNumber(int playerNumber) {
     _playerNumber = playerNumber;
+    notifyListeners();
+  }
+
+  joinGame() {
+    navigatorKey.currentState?.push(MaterialPageRoute(
+      builder: (context) => JoinGameScreen(),
+    ));
+  }
+
+  newGame() {
+    getIt<SocketIOService>().handleNewGame();
+    navigatorKey.currentState?.push(MaterialPageRoute(
+      builder: (context) => NewGameScreen(),
+    ));
   }
 }
 
@@ -275,7 +226,7 @@ class _WinnerDialogState extends State<WinnerDialog> {
               MaterialButton(
                   height: MediaQuery.of(context).size.height * .065,
                   onPressed: () {
-                    Navigator.pop(context);
+                    navigatorKey.currentState?.pop();
                   },
                   shape: RoundedRectangleBorder(
                       borderRadius: new BorderRadius.circular(12)),

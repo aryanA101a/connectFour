@@ -3,11 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class TempScreen extends StatelessWidget {
-  const TempScreen({ Key? key }) : super(key: key);
+  const TempScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    
-    return Scaffold(body: Center(child:Text(context.watch<ConnectFourViewModel>().playerNumber??"Connecting...") ),);
+    var playerNumber = context.watch<ConnectFourViewModel>().playerNumber;
+    return Scaffold(
+      body: Center(
+          child: Text(
+              playerNumber!=null?playerNumber.toString():
+                  "Connecting...")),
+    );
   }
 }

@@ -4,12 +4,14 @@ import 'dart:developer';
 import 'package:connect_four/coin_model.dart';
 import 'package:connect_four/connect_four_view_model.dart';
 import 'package:connect_four/join_game_screen.dart';
+import 'package:connect_four/locator.dart';
 import 'package:connect_four/new_game_screen.dart';
+import 'package:connect_four/socketio_service.dart';
+import 'package:connect_four/temp_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 enum GameStatus { player1Won, player2Won, draw, goingOn }
 
@@ -21,70 +23,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late IO.Socket socket;
-  joinGame() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => JoinGameScreen(handleJoinGame),
-        ));
-  }
+ 
 
-  newGame() {
-    handleNewGame();
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => NewGameScreen(),
-        ));
-  }
-
-  handleJoinGame() {
-    String code = context.read<ConnectFourViewModel>().gameCode;
-    socket.emit('joinGame',code);
-
-  }
-
-  handleNewGame() {
-    socket.emit('newGame');
-  }
-
-  handleGameCode(gameCode) {
-    context.read<ConnectFourViewModel>().setGameCode(gameCode);
-  }
-
-  handlePlayerNumber(playerNumber) {
-    context.read<ConnectFourViewModel>().setPlayerNumber(playerNumber);
-  }
-
-  initSocket() {
-    try {
-      socket = IO.io(
-          'https://6e0b-2409-4043-2e02-3eeb-6ce4-d53e-2857-7f7c.in.ngrok.io',
-          IO.OptionBuilder()
-              .setTransports(['websocket']) // for Flutter or Dart VM
-              .enableAutoConnect()
-              .build() // disable auto-connection
-
-          );
-      socket.on('gameCode', handleGameCode);
-      socket.on('playerNumber', handlePlayerNumber);
-    } catch (e) {
-      log(e.toString());
-    }
-  }
-
-  @override
-  void initState() {
-    initSocket();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    socket.disconnect();
-    super.dispose();
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: MaterialButton(
                     color: Colors.lightBlue.shade200,
                     elevation: 0,
-                    onPressed: newGame,
+                    onPressed: context.read<ConnectFourViewModel>().newGame,
                     child: Text(
                       "NEW GAME",
                       style: GoogleFonts.raleway(
@@ -136,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
               MaterialButton(
                   color: Colors.lightBlue.shade200,
                   elevation: 0,
-                  onPressed: joinGame,
+                  onPressed: context.read<ConnectFourViewModel>().joinGame,
                   child: Text(
                     "JOIN GAME",
                     style: GoogleFonts.raleway(

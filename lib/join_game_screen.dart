@@ -1,11 +1,34 @@
 import 'package:connect_four/connect_four_view_model.dart';
+import 'package:connect_four/main.dart';
+import 'package:connect_four/socketio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class JoinGameScreen extends StatelessWidget {
-  final Function() handleJoinGame;
-  const JoinGameScreen(this.handleJoinGame, {Key? key}) : super(key: key);
+import 'locator.dart';
 
+class JoinGameScreen extends StatefulWidget {
+  // final Function() handleJoinGame;
+  const JoinGameScreen( {Key? key}) : super(key: key);
+
+  @override
+  State<JoinGameScreen> createState() => _JoinGameScreenState();
+}
+
+class _JoinGameScreenState extends State<JoinGameScreen> {
+  
+
+   @override
+  void initState() {
+    getIt<SocketIOService>().reconnect();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    getIt<SocketIOService>().disconnect();
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     ConnectFourViewModel connectFourViewModel =
@@ -14,7 +37,7 @@ class JoinGameScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: InkResponse(
-          onTap: () => Navigator.pop(context),
+          onTap: () => navigatorKey.currentState?.pop(),
           child: Icon(
             Icons.arrow_back,
             color: Colors.black,
@@ -31,7 +54,7 @@ class JoinGameScreen extends StatelessWidget {
           TextButton(
               onPressed: connectFourViewModel.gameCode.isNotEmpty
                   ? () {
-                      handleJoinGame();
+                      getIt<SocketIOService>().handleJoinGame();
                     }
                   : null,
               child: Text("Start"))

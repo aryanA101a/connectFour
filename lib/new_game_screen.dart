@@ -1,12 +1,32 @@
 import 'package:connect_four/connect_four_view_model.dart';
 import 'package:connect_four/locator.dart';
+import 'package:connect_four/socketio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-class NewGameScreen extends StatelessWidget {
+class NewGameScreen extends StatefulWidget {
   const NewGameScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NewGameScreen> createState() => _NewGameScreenState();
+}
+
+class _NewGameScreenState extends State<NewGameScreen> {
 // var connectFourViewModel=
+
+  @override
+  void initState() {
+    getIt<SocketIOService>().reconnect();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    getIt<SocketIOService>().disconnect();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
