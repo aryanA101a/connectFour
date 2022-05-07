@@ -36,6 +36,8 @@ class ConnectFourViewModel with ChangeNotifier {
   }
 
   GameStatus checkWinningStatus() {
+    log("xxxxxxxxxxxxxxxxxxxxx");
+
     log("checkWinningStatus");
     int coinCounter = 0;
     bool result = false;
@@ -45,15 +47,13 @@ class ConnectFourViewModel with ChangeNotifier {
       }
       for (int j = 0; j < 7; j++) {
         if (_boardData[i][j].state != Status.empty) {
-          // log("xxxxxxxxxxxxxxxxxxxxx");
-          log("$i $j");
-
           coinCounter++;
           if (coinCounter == 42) {
             return GameStatus.draw;
           }
           //check for index overflow
-          if (i + 3 < 6 && j + 3 < 7) {
+          if (j + 3 < 7) {
+            log("**{$i $j}** $result");
             //horizontal four
             if (_boardData[i][j].color == _boardData[i][j + 1].color &&
                 _boardData[i][j + 1].color == _boardData[i][j + 2].color &&
@@ -63,15 +63,11 @@ class ConnectFourViewModel with ChangeNotifier {
               break;
             }
 
-            if (_boardData[i][j].color == _boardData[i + 1][j].color &&
-                _boardData[i + 1][j].color == _boardData[i + 2][j].color &&
-                _boardData[i + 2][j].color == _boardData[i + 3][j].color) {
-              log("winner");
-              result = true;
-              break;
-            }
-
-            if (_boardData[i][j].color == _boardData[i + 1][j + 1].color &&
+           
+           
+          }
+          if(i + 3 < 6&&j + 3 < 7){
+             if (_boardData[i][j].color == _boardData[i + 1][j + 1].color &&
                 _boardData[i + 1][j + 1].color ==
                     _boardData[i + 2][j + 2].color &&
                 _boardData[i + 2][j + 2].color ==
@@ -81,6 +77,17 @@ class ConnectFourViewModel with ChangeNotifier {
               break;
             }
           }
+           if (i + 3 < 6) {
+              if (_boardData[i][j].color == _boardData[i + 1][j].color &&
+                  _boardData[i + 1][j].color == _boardData[i + 2][j].color &&
+                  _boardData[i + 2][j].color == _boardData[i + 3][j].color) {
+                log("winner");
+                result = true;
+                break;
+              }
+
+              log("${_boardData[i][j].color.toString()} ${_boardData[i + 1][j].color.toString()} ${_boardData[i + 2][j].color.toString()} ${_boardData[i + 3][j].color.toString()}");
+            }
           if (i + 3 <= 5 && j - 3 >= 0) {
             if (_boardData[i][j].color == _boardData[i + 1][j - 1].color &&
                 _boardData[i + 1][j - 1].color ==
