@@ -44,9 +44,9 @@ class ConnectFourViewModel with ChangeNotifier {
         break;
       }
       for (int j = 0; j < 7; j++) {
-        // log("$i $j");
         if (_boardData[i][j].state != Status.empty) {
           // log("xxxxxxxxxxxxxxxxxxxxx");
+          log("$i $j");
 
           coinCounter++;
           if (coinCounter == 42) {
@@ -62,7 +62,7 @@ class ConnectFourViewModel with ChangeNotifier {
               result = true;
               break;
             }
-            //vertical four
+
             if (_boardData[i][j].color == _boardData[i + 1][j].color &&
                 _boardData[i + 1][j].color == _boardData[i + 2][j].color &&
                 _boardData[i + 2][j].color == _boardData[i + 3][j].color) {
@@ -155,7 +155,6 @@ class ConnectFourViewModel with ChangeNotifier {
     } else if (language == "ENG") {
       prefs.setString("language", "ENG");
       _appbarTitle = "CONNECT FOUR";
-
     }
     notifyListeners();
   }

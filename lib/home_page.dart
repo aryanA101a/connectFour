@@ -108,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.lightBlue,
               shape: CircleBorder(),
               onPressed: () {
-                connectFourViewModel.showResult(context, GameStatus.player1Won);
+                connectFourViewModel.reset();
               },
               child: Icon(
                 Icons.replay,
